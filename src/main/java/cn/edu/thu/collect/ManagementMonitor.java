@@ -32,14 +32,28 @@ import java.util.concurrent.TimeUnit;
 import javax.management.ListenerNotFoundException;
 import javax.management.NotificationBroadcaster;
 import javax.management.NotificationListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //modified from https://github.com/xqbase/metric/blob/master/client/src/main/java/com/xqbase/metric/client/ManagementMonitor.java
 
 public class ManagementMonitor implements Runnable {
+  Logger logger = LoggerFactory.getLogger(ManagementMonitor.class);
 
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws Exception {
 
-    ManagementMonitor monitor = new ManagementMonitor("test", new HashMap<>());
+    Writer writer = null;
+
+    //writer = new IoTDBDirectly();
+    //writer.connect("127.0.0.1", 6667);
+
+    //writer = new EMQX();
+    //writer.connect("127.0.0.1", 1883);
+
+    //writer = new Kafka();
+    //writer.connect("127.0.0.1", 9092);
+
+    ManagementMonitor monitor = new ManagementMonitor("test", writer);
 
     //begin to collect data.
 
@@ -54,6 +68,7 @@ public class ManagementMonitor implements Runnable {
 
   //when creating time series finished, the field will be set as true.
   boolean init = false;
+
   //where to collect data, kafka or EMQX temporarily, or IoTDB directly.
   Writer writer;
 
@@ -65,11 +80,24 @@ public class ManagementMonitor implements Runnable {
           tagPairs[0] + "=" + tagPairs[1] + "," + tagPairs[2] + "=" + tagPairs[3] + "," + name
               + " \t" + value);
     }
-    String path = getPath(tagPairs) + "." + name;
+    String device = getPath(tagPairs);
+    String path = device + "." + name;
 
     if (!init) {
       //create timeseries;
+      String sql = "create timeseries " + path + "with DATATYPE=DOUBLE,ENCODING=RLE";
+      try {
+        writer.register(sql);
+      } catch (Exception e) {
+        logger.error(e.getMessage());
+      }
+    }
 
+    try {
+      //insert data
+      writer.write(String.format("insert into %s (timestamp, %s) values (%d, %f);", device, name, System.currentTimeMillis(), value));
+    } catch (Exception e) {
+      logger.error(e.getMessage());
     }
 
   }
@@ -96,10 +124,6 @@ public class ManagementMonitor implements Runnable {
     return divisor == 0 ? 0 : (double) dividend * 100 / divisor;
   }
 
-  private static Map<String, String> getTagMap(String... tagPairs) {
-    Map<String, String> tagMap = new HashMap<>();
-    return tagMap;
-  }
 
   private String cpu, threads, memoryMB, memoryPercent;
   private String memoryPoolMB, memoryPoolPercent;
@@ -112,7 +136,8 @@ public class ManagementMonitor implements Runnable {
   private Map<NotificationBroadcaster, NotificationListener>
       gcListeners = new HashMap<>();
 
-  public ManagementMonitor(String prefix, Map<String, String> tagMap) {
+  public ManagementMonitor(String prefix, Writer writer) {
+    this.writer = writer;
     cpu = prefix + ".cpu";
     threads = prefix + ".threads";
     memoryMB = prefix + ".memory.mb";
@@ -124,7 +149,6 @@ public class ManagementMonitor implements Runnable {
     if (os_ instanceof OperatingSystemMXBean) {
       os = (OperatingSystemMXBean) os_;
     }
-    this.tagMap = tagMap;
 
     String gc = prefix + ".gc.time";
     for (GarbageCollectorMXBean gcBean :

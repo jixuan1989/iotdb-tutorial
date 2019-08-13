@@ -21,10 +21,10 @@ package cn.edu.thu.collect;
 
 public interface Writer {
 
-  public void connect(String ip, String port);
+  public void connect(String ip, int port) throws Exception;
 
-  public void register(String command);
+  public void register(String command) throws Exception;
 
-  public void write();
+  public void write(String command) throws Exception;
 
 }
