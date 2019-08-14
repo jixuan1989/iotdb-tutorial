@@ -17,14 +17,15 @@
  * under the License.
  */
 
-package cn.edu.thu.collect;
+package cn.edu.thu.init;
 
-public interface Writer {
+import cn.edu.thu.collect.IoTDBDirectly;
 
-  public void connect(String ip, int port) throws Exception;
+public class InitStorageGroup {
 
-  public void register(String command) throws Exception;
-
-  public void write(String command) throws Exception;
-
+  public static void main(String[] args) throws Exception {
+    IoTDBDirectly ioTDBDirectly = new IoTDBDirectly();
+    ioTDBDirectly.connect("127.0.0.1", 6667);
+    ioTDBDirectly.write("set storage group to root.app");
+  }
 }

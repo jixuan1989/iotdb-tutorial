@@ -17,7 +17,9 @@
  * under the License.
  */
 
-package cn.edu.thu.store;
 
-public class EMQXConsumer {
-}
+package cn.edu.thu.accessdata;
+
+/*
+you can read IoTDB's cli java file to get more examples.
+ */

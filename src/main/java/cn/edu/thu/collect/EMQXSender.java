@@ -17,12 +17,13 @@ package cn.edu.thu.collect;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-public class EMQX implements Writer {
+public class EMQXSender implements Sender {
 
-  MqttClient sampleClient;
-  String topic = "demo/topics";
+  protected MqttClient sampleClient;
+  protected String topic = "demo";
   int qos = 2;
 
   @Override
@@ -49,4 +50,14 @@ public class EMQX implements Writer {
     message.setQos(qos);
     sampleClient.publish(topic, message);
   }
+
+  @Override
+  public void close() {
+    try {
+      sampleClient.close();
+    } catch (MqttException e) {
+      e.printStackTrace();
+    }
+  }
+
 }

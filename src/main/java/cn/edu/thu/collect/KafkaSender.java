@@ -29,8 +29,8 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-public class Kafka implements Writer {
-  private  String topic = "demo/topics";
+public class KafkaSender implements Sender {
+  private  String topic = "demo";
   private  Boolean isAsync = false;
   KafkaProducer producer;
   int messageNo = 1;
@@ -63,6 +63,11 @@ public class Kafka implements Writer {
       }
     }
     ++messageNo;
+  }
+
+  @Override
+  public void close() {
+    producer.close();
   }
 
 

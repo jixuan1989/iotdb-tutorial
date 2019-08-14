@@ -17,14 +17,16 @@
  * under the License.
  */
 
-
 package cn.edu.thu.collect;
 
-/*
-this package shows how to collect data using DataGenerator.java.
+public interface Sender {
 
-Then, we can write data into EMQXSender (using MQTT protocol);
-Or saving it into KafkaSender;
-Or writing data into IoTDB directly.
+  public void connect(String ip, int port) throws Exception;
 
-*/
+  public void register(String command) throws Exception;
+
+  public void write(String command) throws Exception;
+
+  public void close();
+
+}

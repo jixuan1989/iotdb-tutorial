@@ -19,6 +19,7 @@
 
 package cn.edu.thu.store;
 
+import cn.edu.thu.collect.IoTDBDirectly;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -26,17 +27,23 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KafkaConsumerStore {
-
-  public static void main(String[] args) {
-
+  Logger logger = LoggerFactory.getLogger(KafkaConsumerStore.class);
+  public static void main(String[] args) throws Exception {
+    KafkaConsumerStore consumerStore = new KafkaConsumerStore("demo", "127.0.0.1", 9092, "127.0.0.1", 6667);
+    consumerStore.doWork();
   }
 
   private final KafkaConsumer<Integer, String> consumer;
   private final String topic;
 
-  public KafkaConsumerStore(String topic, String ip, int port) {
+  IoTDBDirectly ioTDBWriter = new IoTDBDirectly();
+
+  public KafkaConsumerStore(String topic, String ip, int port, String iotdbIp, int iotdbPort)
+      throws Exception {
     Properties props = new Properties();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, ip + ":" + port);
     props.put(ConsumerConfig.GROUP_ID_CONFIG, "DemoConsumer");
@@ -48,13 +55,21 @@ public class KafkaConsumerStore {
 
     consumer = new KafkaConsumer<>(props);
     this.topic = topic;
+    ioTDBWriter.connect(iotdbIp, iotdbPort);
   }
 
   public void doWork() {
     consumer.subscribe(Collections.singletonList(this.topic));
-    ConsumerRecords<Integer, String> records = consumer.poll(Duration.ofSeconds(1));
-    for (ConsumerRecord<Integer, String> record : records) {
-      System.out.println("Received message: (" + record.key() + ", " + record.value() + ") at offset " + record.offset());
+    while (true) {
+      ConsumerRecords<Integer, String> records = consumer.poll(Duration.ofSeconds(1));
+      for (ConsumerRecord<Integer, String> record : records) {
+        try {
+          System.err.println(record.value());
+          ioTDBWriter.write(record.value());
+        } catch (Exception e) {
+          logger.error(e.getMessage());
+        }
+      }
     }
   }
 

@@ -13,8 +13,9 @@
  * under the License.
  */
 
-package cn.edu.thu.collect;
+package cn.edu.thu.datagenerator;
 
+import cn.edu.thu.collect.Sender;
 import com.sun.management.OperatingSystemMXBean;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -37,29 +38,29 @@ import org.slf4j.LoggerFactory;
 
 //modified from https://github.com/xqbase/metric/blob/master/client/src/main/java/com/xqbase/metric/client/ManagementMonitor.java
 
-public class ManagementMonitor implements Runnable {
-  Logger logger = LoggerFactory.getLogger(ManagementMonitor.class);
+public class DataGenerator implements Runnable {
+  Logger logger = LoggerFactory.getLogger(DataGenerator.class);
 
   public static void main(String[] args) throws Exception {
 
-    Writer writer = null;
+    Sender writer = null;
 
     //writer = new IoTDBDirectly();
     //writer.connect("127.0.0.1", 6667);
 
-    //writer = new EMQX();
+    //writer = new EMQXSender();
     //writer.connect("127.0.0.1", 1883);
 
-    //writer = new Kafka();
+    //writer = new KafkaSender();
     //writer.connect("127.0.0.1", 9092);
 
-    ManagementMonitor monitor = new ManagementMonitor("test", writer);
+    DataGenerator monitor = new DataGenerator("test", writer);
 
     //begin to collect data.
 
     ExecutorService service = Executors.newSingleThreadScheduledExecutor();
     ((ScheduledExecutorService) service)
-        .scheduleWithFixedDelay(monitor, 0, 1000, TimeUnit.MILLISECONDS);
+        .scheduleWithFixedDelay(monitor, 0, 10000, TimeUnit.MILLISECONDS);
 
     while (true) {
       //collect data forever...
@@ -69,8 +70,8 @@ public class ManagementMonitor implements Runnable {
   //when creating time series finished, the field will be set as true.
   boolean init = false;
 
-  //where to collect data, kafka or EMQX temporarily, or IoTDB directly.
-  Writer writer;
+  //where to collect data, kafka or EMQXSender temporarily, or IoTDB directly.
+  Sender writer;
 
   private void put(String name, double value, String... tagPairs) {
     if (tagPairs.length == 2) {
@@ -85,9 +86,12 @@ public class ManagementMonitor implements Runnable {
 
     if (!init) {
       //create timeseries;
-      String sql = "create timeseries " + path + "with DATATYPE=DOUBLE,ENCODING=RLE";
+      String sql = "create timeseries " + path + " with DATATYPE=DOUBLE,ENCODING=RLE";
+      System.err.println(sql);
       try {
-        writer.register(sql);
+        if (writer != null) {
+          writer.register(sql);
+        }
       } catch (Exception e) {
         logger.error(e.getMessage());
       }
@@ -95,7 +99,12 @@ public class ManagementMonitor implements Runnable {
 
     try {
       //insert data
-      writer.write(String.format("insert into %s (timestamp, %s) values (%d, %f);", device, name, System.currentTimeMillis(), value));
+      if (writer != null) {
+        String sql = String.format("insert into %s (timestamp, %s) values (%d, %f);", device, name,
+            time, value);
+        writer.write(sql);
+        System.err.println(sql);
+      }
     } catch (Exception e) {
       logger.error(e.getMessage());
     }
@@ -136,21 +145,21 @@ public class ManagementMonitor implements Runnable {
   private Map<NotificationBroadcaster, NotificationListener>
       gcListeners = new HashMap<>();
 
-  public ManagementMonitor(String prefix, Writer writer) {
+  public DataGenerator(String prefix, Sender writer) {
     this.writer = writer;
-    cpu = prefix + ".cpu";
-    threads = prefix + ".threads";
-    memoryMB = prefix + ".memory.mb";
-    memoryPercent = prefix + ".memory.percent";
-    memoryPoolMB = prefix + ".memory_pool.mb";
-    memoryPoolPercent = prefix + ".memory_pool.percent";
+    cpu = prefix + "_cpu";
+    threads = prefix + "_threads";
+    memoryMB = prefix + "_memory_mb";
+    memoryPercent = prefix + "_memory_percent";
+    memoryPoolMB = prefix + "_memory_pool_mb";
+    memoryPoolPercent = prefix + "_memory_pool_percent";
     java.lang.management.OperatingSystemMXBean os_ =
         ManagementFactory.getOperatingSystemMXBean();
     if (os_ instanceof OperatingSystemMXBean) {
       os = (OperatingSystemMXBean) os_;
     }
 
-    String gc = prefix + ".gc.time";
+    String gc = prefix + "_gc_time";
     for (GarbageCollectorMXBean gcBean :
         ManagementFactory.getGarbageCollectorMXBeans()) {
       if (!(gcBean instanceof NotificationBroadcaster)) {
@@ -169,8 +178,9 @@ public class ManagementMonitor implements Runnable {
     }
   }
 
-
+  long time;
   public void run() {
+    time =System.currentTimeMillis();
     put(threads, thread.getThreadCount(), "type", "total");
     put(threads, thread.getDaemonThreadCount(), "type", "daemon");
 

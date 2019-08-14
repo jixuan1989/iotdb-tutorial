@@ -19,11 +19,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class IoTDBDirectly implements Writer {
+public class IoTDBDirectly implements Sender {
 
-
-  static Connection connection;
-  static Statement statement;
+  protected Connection connection;
+  protected Statement statement;
 
   @Override
   public void connect(String ip, int port) throws Exception {
@@ -48,5 +47,16 @@ public class IoTDBDirectly implements Writer {
   public void write(String command) throws Exception {
     statement.execute(command);
   }
+
+  @Override
+  public void close() {
+    try {
+      connection.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+  }
+
+
 
 }
