@@ -16,7 +16,6 @@
 package cn.edu.thu.datagenerator;
 
 import cn.edu.thu.collect.EMQXSender;
-import cn.edu.thu.collect.IoTDBDirectly;
 import cn.edu.thu.collect.Sender;
 import com.sun.management.OperatingSystemMXBean;
 import java.lang.management.GarbageCollectorMXBean;
@@ -25,7 +24,6 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.ThreadMXBean;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +49,8 @@ public class DataGenerator implements Runnable {
 //    writer = new IoTDBDirectly();
 //    writer.connect("127.0.0.1", 6667);
 
-//    writer = new EMQXSender();
-//    writer.connect("127.0.0.1", 1883);
+    writer = new EMQXSender();
+    writer.connect("127.0.0.1", 1883);
 
     //writer = new KafkaSender();
     //writer.connect("127.0.0.1", 9092);
