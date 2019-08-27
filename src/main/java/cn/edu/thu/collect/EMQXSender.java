@@ -22,20 +22,19 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 public class EMQXSender implements Sender {
 
-  protected MqttClient sampleClient;
-  protected String topic = "demo";
+  private MqttClient sampleClient;
+  private String topic = "demo";
   int qos = 2;
 
   @Override
   public void connect(String ip, int port) throws Exception {
     String broker = "tcp://" + ip + ":" + port;
     String clientId = "SenderSimulator";
-    org.eclipse.paho.client.mqttv3.persist.MemoryPersistence persistence = new org.eclipse.paho.client.mqttv3.persist.MemoryPersistence();
-    sampleClient = new MqttClient(broker, clientId, persistence);
-    MqttConnectOptions connOpts = new MqttConnectOptions();
-    connOpts.setCleanSession(true);
+    MqttConnectOptions options = new MqttConnectOptions();
+    options.setCleanSession(true);
+    sampleClient = new MqttClient(broker, clientId);
     System.out.println("Connecting to broker:" + broker);
-    sampleClient.connect(connOpts);
+    sampleClient.connect(options);
     System.out.println("Connected");
   }
 
@@ -46,8 +45,8 @@ public class EMQXSender implements Sender {
 
   @Override
   public void write(String command) throws Exception {
-    MqttMessage message = new MqttMessage(command.getBytes());
-    message.setQos(qos);
+    MqttMessage message = new MqttMessage();
+    message.setPayload(command.getBytes());
     sampleClient.publish(topic, message);
   }
 

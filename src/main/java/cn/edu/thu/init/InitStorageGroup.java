@@ -27,5 +27,7 @@ public class InitStorageGroup {
     IoTDBDirectly ioTDBDirectly = new IoTDBDirectly();
     ioTDBDirectly.connect("127.0.0.1", 6667);
     ioTDBDirectly.write("set storage group to root.app");
+    ioTDBDirectly.close();
   }
+
 }

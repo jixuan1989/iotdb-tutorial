@@ -27,4 +27,14 @@ The process is:
   - please read https://github.com/apache/incubator-iotdb/tree/master/grafana
 
     
-  
+## how to use EMQ 
+
+* deploy EMQ: https://github.com/emqx/emqx/releases/tag/v4.0-alpha.1
+* start EMQ: ./bin/emqx start
+* deploy IoTDB: ./sbin/start-server.sh
+* start IoTDB server: ./sbin/start
+* run InitStorageGroup
+* launch EMQXConsumerStore
+* start DataGenerator
+* start IoTDB client: ./sbin/start-client.sh
+* select data: select * from root;
