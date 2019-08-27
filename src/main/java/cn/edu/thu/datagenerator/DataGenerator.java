@@ -51,8 +51,8 @@ public class DataGenerator implements Runnable {
 //    writer = new IoTDBDirectly();
 //    writer.connect("127.0.0.1", 6667);
 
-    writer = new EMQXSender();
-    writer.connect("127.0.0.1", 1883);
+//    writer = new EMQXSender();
+//    writer.connect("127.0.0.1", 1883);
 
     //writer = new KafkaSender();
     //writer.connect("127.0.0.1", 9092);

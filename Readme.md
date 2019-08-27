@@ -35,6 +35,7 @@ The process is:
 * start IoTDB server: ./sbin/start
 * run InitStorageGroup
 * launch EMQXConsumerStore
+* uncomment " writer = new EMQXSender(); writer.connect("127.0.0.1", 1883);" in DataGenerator
 * start DataGenerator
 * start IoTDB client: ./sbin/start-client.sh
 * select data: select * from root;
