@@ -43,8 +43,9 @@ public class SparkSQLAnalyzer {
   }
 
   public void readFile() {
-    Dataset<Row> df = spark.read().format("org.apache.iotdb.tsfile").load("/Users/hxd/Documents/git/incubator-iotdb/server/target/iotdb-server-0.9.0-SNAPSHOT/data/data/sequence/root.app/1565762377311-101.tsfile");
-    df.show();
+    //Dataset<Row> df = spark.read().format("org.apache.iotdb.tsfile").load("/Users/hxd/Documents/git/incubator-iotdb/server/target/data/data/sequence/root.app/1568140355377-101.tsfile");
+    Dataset<Row> df = spark.read().format("org.apache.iotdb.tsfile").option("form", "narrow_form").load("/Users/hxd/Documents/git/incubator-iotdb/server/target/data/data/sequence/root.app/1568161837547-101.tsfile");
+    df.show(1000);
 
     df.createOrReplaceTempView("tsfile_table");
     Dataset<Row>  newDf = spark.sql("select count(*) from tsfile_table");
