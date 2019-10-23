@@ -22,18 +22,17 @@ package cn.edu.thu.analyze;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.iotdb.spark.tsfile.*;
 
-public class SparkSQLAnalyzer {
+public class SparkSQLAnalyzer4TsFile {
 
   SparkSession spark;
 
   public static void main(String[] args) {
-    SparkSQLAnalyzer analyzer = new SparkSQLAnalyzer();
+    SparkSQLAnalyzer4TsFile analyzer = new SparkSQLAnalyzer4TsFile();
     analyzer.readFile();
   }
 
-  public SparkSQLAnalyzer() {
+  public SparkSQLAnalyzer4TsFile() {
     spark = SparkSession
         .builder()
         .appName("Java Spark SQL TsFile example")
@@ -43,8 +42,9 @@ public class SparkSQLAnalyzer {
   }
 
   public void readFile() {
-    //Dataset<Row> df = spark.read().format("org.apache.iotdb.tsfile").load("/Users/hxd/Documents/git/incubator-iotdb/server/target/data/data/sequence/root.app/1568140355377-101.tsfile");
-    Dataset<Row> df = spark.read().format("org.apache.iotdb.tsfile").option("form", "narrow_form").load("/Users/hxd/Documents/git/incubator-iotdb/server/target/data/data/sequence/root.app/1568161837547-101.tsfile");
+    //Dataset<Row> df = spark.read().format("org.apache.iotdb.spark.tsfile").load("/Users/hxd/Documents/git/incubator-iotdb/server/target/data/data/sequence/root.app/1568140355377-101.tsfile");
+    //can use form narrow_form to switch to narrow_form.
+    Dataset<Row> df = spark.read().format("org.apache.iotdb.spark.tsfile").option("form", "narrow_form").load("/Users/hxd/Documents/git/incubator-iotdb/distribution/target/apache-iotdb-0.9.0-SNAPSHOT-incubating/data/data/sequence/root.app/1571817511371-103.tsfile");
     df.show(1000);
 
     df.createOrReplaceTempView("tsfile_table");
