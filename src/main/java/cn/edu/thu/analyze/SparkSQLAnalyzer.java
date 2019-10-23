@@ -22,7 +22,7 @@ package cn.edu.thu.analyze;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.iotdb.tsfile.*;
+import org.apache.iotdb.spark.tsfile.*;
 
 public class SparkSQLAnalyzer {
 
