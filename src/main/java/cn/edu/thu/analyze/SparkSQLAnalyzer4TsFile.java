@@ -44,7 +44,7 @@ public class SparkSQLAnalyzer4TsFile {
   public void readFile() {
     //Dataset<Row> df = spark.read().format("org.apache.iotdb.spark.tsfile").load("/Users/hxd/Documents/git/incubator-iotdb/server/target/data/data/sequence/root.app/1568140355377-101.tsfile");
     //can use form narrow_form to switch to narrow_form.
-    Dataset<Row> df = spark.read().format("org.apache.iotdb.spark.tsfile").option("form", "narrow_form").load("/Users/hxd/Documents/git/incubator-iotdb/distribution/target/apache-iotdb-0.9.0-SNAPSHOT-incubating/data/data/sequence/root.app/1571817511371-103.tsfile");
+    Dataset<Row> df = spark.read().format("org.apache.iotdb.spark.tsfile").option("form", "narrow_form").load("127.0.0.1_6667.tsfile");
     df.show(1000);
 
     df.createOrReplaceTempView("tsfile_table");

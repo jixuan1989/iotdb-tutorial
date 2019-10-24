@@ -18,6 +18,7 @@ package cn.edu.thu.datagenerator;
 import cn.edu.thu.collect.EMQXSender;
 import cn.edu.thu.collect.IoTDBDirectly;
 import cn.edu.thu.collect.Sender;
+import cn.edu.thu.collect.TsFileDirectly;
 import com.sun.management.OperatingSystemMXBean;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -35,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 import javax.management.ListenerNotFoundException;
 import javax.management.NotificationBroadcaster;
 import javax.management.NotificationListener;
+import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
+import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +50,8 @@ public class DataGenerator implements Runnable {
 
     Sender writer = null;
 
-    writer = new IoTDBDirectly();
+    //writer = new IoTDBDirectly();
+    writer = new TsFileDirectly();
     writer.connect("127.0.0.1", 6667);
 
     //writer = new EMQXSender();
@@ -62,7 +66,7 @@ public class DataGenerator implements Runnable {
 
     ExecutorService service = Executors.newSingleThreadScheduledExecutor();
     ((ScheduledExecutorService) service)
-        .scheduleWithFixedDelay(monitor, 0, 10000, TimeUnit.MILLISECONDS);
+        .scheduleWithFixedDelay(monitor, 0, 1000, TimeUnit.MILLISECONDS);
 
     while (true) {
       //collect data forever...
@@ -93,7 +97,13 @@ public class DataGenerator implements Runnable {
 
       try {
         if (writer != null) {
-          writer.register(sql);
+          if (writer instanceof TsFileDirectly) {
+            //tsfile does not need SQL
+            ((TsFileDirectly)writer).register(name, TSDataType.DOUBLE, TSEncoding.RLE);
+          } else {
+            //using SQL
+            writer.register(sql);
+          }
         }
       } catch (Exception e) {
         logger.error(e.getMessage());
@@ -103,10 +113,14 @@ public class DataGenerator implements Runnable {
     try {
       //insert data
       if (writer != null) {
-        String sql = String.format("insert into %s (timestamp, %s) values (%d, %f);", device, name,
-            time, value);
-        writer.write(sql);
-        System.err.println(sql);
+        if (writer instanceof  TsFileDirectly) {
+          ((TsFileDirectly)writer).write(device, name, time, value);
+        } else {
+          String sql = String.format("insert into %s (timestamp, %s) values (%d, %f);", device, name,
+              time, value);
+          writer.write(sql);
+          System.err.println(sql);
+        }
       }
     } catch (Exception e) {
       logger.error(e.getMessage());
