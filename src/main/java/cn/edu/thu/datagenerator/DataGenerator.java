@@ -50,8 +50,8 @@ public class DataGenerator implements Runnable {
 
     Sender writer = null;
 
-    //writer = new IoTDBDirectly();
-    writer = new TsFileDirectly();
+    writer = new IoTDBDirectly();
+   // writer = new TsFileDirectly();
     writer.connect("127.0.0.1", 6667);
 
     //writer = new EMQXSender();
@@ -70,6 +70,7 @@ public class DataGenerator implements Runnable {
 
     while (true) {
       //collect data forever...
+      Thread.sleep(100);
     }
   }
 

@@ -1,6 +1,5 @@
 package cn.edu.thu.analyze;
 
-import org.apache.iotdb.sparkdb.Transformer;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
