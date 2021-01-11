@@ -66,7 +66,7 @@ public class DataGenerator implements Runnable {
 
     ExecutorService service = Executors.newSingleThreadScheduledExecutor();
     ((ScheduledExecutorService) service)
-        .scheduleWithFixedDelay(monitor, 0, 1000, TimeUnit.MILLISECONDS);
+        .scheduleWithFixedDelay(monitor, 0, 2000, TimeUnit.MILLISECONDS);
 
     while (true) {
       //collect data forever...
@@ -100,7 +100,7 @@ public class DataGenerator implements Runnable {
         if (writer != null) {
           if (writer instanceof TsFileDirectly) {
             //tsfile does not need SQL
-            ((TsFileDirectly)writer).register(name, TSDataType.DOUBLE, TSEncoding.RLE);
+            ((TsFileDirectly)writer).register(path, name, TSDataType.DOUBLE, TSEncoding.RLE);
           } else {
             //using SQL
             writer.register(sql);
@@ -111,20 +111,21 @@ public class DataGenerator implements Runnable {
       }
     }
 
+    String sql = null;
     try {
       //insert data
       if (writer != null) {
         if (writer instanceof  TsFileDirectly) {
           ((TsFileDirectly)writer).write(device, name, time, value);
         } else {
-          String sql = String.format("insert into %s (timestamp, %s) values (%d, %f);", device, name,
+          sql = String.format("insert into %s (time, %s) values (%d, %f);", device, name,
               time, value);
           writer.write(sql);
           System.err.println(sql);
         }
       }
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error(e.getMessage() + ": \n\t" + sql);
     }
 
   }
@@ -133,10 +134,10 @@ public class DataGenerator implements Runnable {
   private String getPath(String... tagPairs) {
     switch (tagPairs.length) {
       case 2:
-        return "root.app." + tagPairs[1].replaceAll(" ", "_");
+        return "root.app." + tagPairs[1].replaceAll(" ", "_").replaceAll("'","_");
       case 4:
-        return "root.app." + tagPairs[3].replaceAll(" ", "_") + "." + tagPairs[1]
-            .replaceAll(" ", "_");
+        return ("root.app." + tagPairs[3].replaceAll(" ", "_") + "." + tagPairs[1])
+            .replaceAll(" ", "_").replaceAll("'","_");
       default:
         return "root.app";
     }

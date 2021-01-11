@@ -6,6 +6,7 @@ import org.apache.iotdb.tsfile.exception.write.WriteProcessException;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.file.metadata.enums.TSEncoding;
 import org.apache.iotdb.tsfile.fileSystem.FSFactoryProducer;
+import org.apache.iotdb.tsfile.read.common.Path;
 import org.apache.iotdb.tsfile.write.TsFileWriter;
 import org.apache.iotdb.tsfile.write.record.TSRecord;
 import org.apache.iotdb.tsfile.write.record.datapoint.DataPoint;
@@ -29,9 +30,9 @@ public class TsFileDirectly implements Sender  {
 
   }
 
-  public void register(String measurement, TSDataType type, TSEncoding encoding)
+  public void register(String fullPath, String measurement, TSDataType type, TSEncoding encoding)
       throws WriteProcessException {
-    tsFileWriter.addMeasurement(new MeasurementSchema(measurement, type, encoding));
+      tsFileWriter.registerTimeseries(new Path(fullPath), new MeasurementSchema(measurement, type, encoding));
   }
 
   @Override
